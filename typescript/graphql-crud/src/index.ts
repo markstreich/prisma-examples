@@ -1,5 +1,5 @@
 import { GraphQLServer } from 'graphql-yoga'
-import { makePrismaSchema, prismaObjectType } from 'nexus-prisma'
+import { makePrismaSchema, prismaObjectType, prismaExtendType } from 'nexus-prisma'
 import * as path from 'path'
 import datamodelInfo from './generated/nexus-prisma'
 import { prisma } from './generated/prisma-client'
@@ -32,9 +32,19 @@ const Mutation = prismaObjectType({
   },
 })
 
+const PostsExample = prismaExtendType({
+  type: "Query",
+  definition: t => {
+    t.field("postsExample", {
+      ...t.prismaType.posts,
+      resolve: (_, args, { prisma }) => prisma.posts(args)
+    });
+  }
+});
+
 const schema = makePrismaSchema({
   // Provide all the GraphQL types we've implemented
-  types: [Query, Mutation, User, Post],
+  types: [Query, Mutation, User, Post, PostsExample],
 
   // Configure the interface to Prisma
   prisma: {
